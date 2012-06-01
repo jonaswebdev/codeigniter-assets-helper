@@ -15,9 +15,9 @@
 * @return    string
 */    
 
-if ( ! function_exists('script_tag'))
+if ( ! function_exists('js'))
 {
-    function script_tag($src = '', $language = 'javascript', $type = 'text/javascript')
+    function js($src = '', $language = 'javascript', $type = 'text/javascript')
     {
         $CI =& get_instance();
 
@@ -98,9 +98,9 @@ if ( ! function_exists('script_tag'))
 }
 
 
-if ( ! function_exists('style_tag'))
+if ( ! function_exists('css'))
 {
-    function style_tag($src = '', $rel = 'stylesheet', $type = 'text/css')
+    function css($src = '', $rel = 'stylesheet', $type = 'text/css')
     {
 	$CI =& get_instance();
 
