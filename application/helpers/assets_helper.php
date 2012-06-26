@@ -1,98 +1,53 @@
-<?php  if ( ! defined('BASEPATH')) exit('No direct script access allowed');
+<?php
+if (!defined('BASEPATH')) exit('No direct script access allowed');
 
 /**
-* Script Tag
-*
-* Generates a script inclusion of a JavaScript file
-* Based on the CodeIgniters original Link Tag.
-*
-* Author: Emir Beganovic
-*
-* @access    public
-* @param    mixed    single javascript file or an array of files
-* @param    string    language
-* @param    string    type
-* @return    string
-*/    
-
-if ( ! function_exists('script_tag'))
+ * Assets Newer Helper to CodeIgniter
+ * 
+ * Generates the URL with parameters for the browser version does not consider the cache.
+ * Useful for Javascript and CSS.
+ * 
+ * * Require: PHP 5.3 
+ * 
+ * @author Jonas Rosado
+ * @since June/2012
+ * @uses <?php echo assets_newer($localUrl); ?> OR <?php echo assets_newer($filePath); ?>
+ */
+if (!function_exists('assets_newer'))
 {
-    function script_tag($src = '', $language = 'javascript', $type = 'text/javascript')
+
+    function assets_newer($src)
     {
-        $CI =& get_instance();
-
-        $script = '<script ';
-	
-        if ( is_array ( $src ) ) // iterate the array 
+        
+        // CI Instace
+        $CI = & get_instance();
+        
+        //Verify If the file is external, because do not get information
+        if (preg_match('@http@', $src) == true && preg_match('@'.$CI->config->slash_item('base_url').'@', $src) == false)
         {
-			
-            foreach ($src as $file_location)
-            {
-			
-				if ( strpos($file_location, '://') !== FALSE )
-                {
-			
-					$script .= 'src="' . $file_location . '"'; // external link
-                }
-                else
-                {
-					$source = $CI->config->slash_item('base_url') . $file_location;
-				
-					// here we also check if file exists, filemtime will return false if it doesn't
-					// if it exists, let's append last modified time to link
-					
-					$filemtime = filemtime($file_location); 
-					if($filemtime != FALSE) $source .= '?' . $filemtime;
-					$script .= 'src="' . $source . '"';
-					
-                }
-				$script .= ' language="' . $language . '" type="' . $type . '"';  
-            }
-           	
-            $script .= "></script>";
-			$script .= "\n"; // append new line
+            return $src; // external link 
         }
-        else
+        
+        // Store parameters of filepath
+        if($pars = strstr($src, '?')){
+            // Renove parameters of filepath
+            $src = strstr($src, '?', true);
+        }
+        
+        // set full file path                
+        $localPath = $_SERVER['DOCUMENT_ROOT'] . str_replace($CI->config->slash_item('base_url'), '/', $src);
+        
+        // clear cache
+        clearstatcache();
+
+        // if file exist, get modify time
+        if (file_exists($localPath) == true && $filemtime = filemtime($localPath))
         {
-		
-        	if ( strpos($src, '://') !== FALSE )
-            {
-				$script .= 'src="' . $src . '"'; // external link            
-			}
-            
-            else
-				
-            {
-                $pathinfo = pathinfo($src);
-				$extension = explode("?", $pathinfo['extension']); // get the basename in case that extension already contains something after the question mark
-
-				// we need to build file location to get the modified time
-				if(!empty($extension[1])) { // there is something after the question mark
-					$file_location = $_SERVER['DOCUMENT_ROOT'].'/' . $pathinfo['dirname'] . '/' . $pathinfo['filename'] . '.' . $extension[0];
-				}
-				else {
-					$file_location = $_SERVER['DOCUMENT_ROOT'].'/' . $pathinfo['dirname'] . '/' . $pathinfo['filename'] . '.' . $pathinfo['extension'];
-				}
-				
-				$source = $CI->config->slash_item('base_url') . $src;
-				
-				// here we also check if file exists, filemtime will return false if it doesn't
-				// if it exists, let's append last modified time to link
-				
-				$filemtime = filemtime($file_location); 
-				if($filemtime != FALSE) $source .= '?' . $filemtime;
-				
-				$script .= 'src="' . $source . '"';
-			}
-                
-            $script .= ' language="'.$language.'" type="'.$type.'"';
-            
-            $script .= ' /></script>';
-			$script .= "\n";
+            $pars = '?tm=' . $filemtime . str_replace('?', '&', $pars);
         }
-
-    
-        return $script;
-
+        
+        // Return URL
+        return $src . $pars;
     }
+
 }
